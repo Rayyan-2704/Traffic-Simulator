@@ -1,0 +1,1 @@
+g++ -std=c++17 -I./include src/main.cpp src/Graph.cpp -o TrafficSim.exe
