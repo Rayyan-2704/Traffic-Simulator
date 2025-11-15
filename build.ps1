@@ -1,1 +1,1 @@
-g++ -std=c++17 -I./include src/main.cpp src/Graph.cpp -o TrafficSim.exe
+g++ -std=c++17 -I./include -IC:\\SFML-3.0.2\\include -LC:\\SFML-3.0.2\\lib src/*.cpp -lsfml-graphics -lsfml-window -lsfml-system -o TrafficSim.exe

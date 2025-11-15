@@ -1,12 +1,13 @@
 #include <iostream>
+#include <vector>
 #include "../include/Graph.h"
+#include "../include/Vehicle.h"
 using namespace std;
 
 int main()
 {
-    cout << "=== Traffic Simulator - Day 1 Test ===" << endl;
-    cout << "Testing Graph Module and Dijkstra's Algorithm\n"
-         << endl;
+    cout << "=== Traffic Simulator - Day 2 Test ===" << endl;
+    cout << "Testing Vehicle Class and Movement\n" << endl;
 
     Graph cityMap;
     if (!cityMap.loadFromFile("data/roads.txt"))
@@ -14,63 +15,75 @@ int main()
         cout << "Failed to load map data!" << endl;
         return 1;
     }
+    cout << "City map loaded with " << cityMap.getNumNodes() << " nodes\n" << endl;
 
-    cityMap.printGraph();
+    cout << "=== SPAWNING VEHICLES ===" << endl;
 
-    // Test Dijkstra's algorithm with multiple routes
-    cout << "=== TESTING DIJKSTRA'S ALGORITHM ===" << endl;
+    // Car 1: Short trip (0 -> 2)
+    vector<int> path1 = cityMap.dijkstraAlgorithm(0, 2);
+    Vehicle car1(1, path1, 1.0);
+    cout << "Car #1 spawned: Route from Node 0 to Node 2" << endl;
 
-    // Test 1: Path from node 0 to node 3
-    cout << "\nTest 1: Finding shortest path from Node 0 to Node 3" << endl;
-    vector<int> path1 = cityMap.dijkstraAlgorithm(0, 3);
+    // Car 2: Medium trip (1 -> 7)
+    vector<int> path2 = cityMap.dijkstraAlgorithm(1, 7);
+    Vehicle car2(2, path2, 1.5);
+    cout << "Car #2 spawned: Route from Node 1 to Node 7" << endl;
 
-    if (!path1.empty())
-    {
-        cout << "Shortest path: ";
-        for (int i = 0; i < path1.size(); i++)
-        {
-            cout << path1[i];
-            if (i < path1.size() - 1)
-                cout << " -> ";
-        }
-        cout << endl;
+    // Car 3: Long trip (0 -> 11)
+    vector<int> path3 = cityMap.dijkstraAlgorithm(0, 11);
+    Vehicle car3(3, path3, 0.8);
+    cout << "Car #3 spawned: Route from Node 0 to Node 11" << endl;
+
+    vector<Vehicle> allCars;
+    allCars.push_back(car1);
+    allCars.push_back(car2);
+    allCars.push_back(car3);
+
+    cout << "\nTotal cars in simulation: " << allCars.size() << endl;
+
+    cout << "\n=== INITIAL VEHICLE INFO ===" << endl;
+    for (auto& car : allCars) {
+        car.printInfo();
     }
 
-    // Test 2: Path from node 1 to node 2
-    cout << "\nTest 2: Finding shortest path from Node 1 to Node 2" << endl;
-    vector<int> path2 = cityMap.dijkstraAlgorithm(1, 2);
+    // Simulate movement for several ticks
+    cout << "\n=== SIMULATION START ===" << endl;
+    cout << "Simulating 10 time steps...\n" << endl;
 
-    if (!path2.empty())
-    {
-        cout << "Shortest path: ";
-        for (int i = 0; i < path2.size(); i++)
-        {
-            cout << path2[i];
-            if (i < path2.size() - 1)
-                cout << " -> ";
+    for (int tick = 1; tick <= 10; tick++) {
+        cout << "--- Tick " << tick << " ---" << endl;
+        
+        // Update all vehicles
+        for (auto& car : allCars) {
+            if (!car.hasArrivedDest()) {
+                car.update();
+            }
         }
+        
+        // Show status summary
+        int moving = 0, arrived = 0;
+        for (const auto& car : allCars) {
+            if (car.hasArrivedDest()) arrived++;
+            else moving++;
+        }
+        cout << "Status: " << moving << " moving, " << arrived << " arrived" << endl;
         cout << endl;
+        
+        // Stop if all cars arrived
+        if (arrived == allCars.size()) {
+            cout << "All vehicles have reached their destinations!" << endl;
+            break;
+        }
     }
 
-    // Test 3: Path from node 0 to node 2 (should compare routes)
-    cout << "\nTest 3: Finding shortest path from Node 0 to Node 2" << endl;
-    vector<int> path3 = cityMap.dijkstraAlgorithm(0, 2);
-
-    if (!path3.empty())
-    {
-        cout << "Shortest path: ";
-        for (int i = 0; i < path3.size(); i++)
-        {
-            cout << path3[i];
-            if (i < path3.size() - 1)
-                cout << " -> ";
-        }
-        cout << endl;
-        cout << "Note: Direct route 0->2 (weight 25) vs 0->1->2 (weight 10+15=25)" << endl;
+    // Final status
+    cout << "\n=== FINAL VEHICLE INFO ===" << endl;
+    for (auto& car : allCars) {
+        car.printInfo();
     }
 
-    cout << "\n=== Day 1 Test Complete! ===" << endl;
-    cout << "Graph module is working correctly!" << endl;
+    cout << "\n=== Day 2 Test Complete! ===" << endl;
+    cout << "Vehicle class is working correctly!" << endl;
 
     return 0;
 }
