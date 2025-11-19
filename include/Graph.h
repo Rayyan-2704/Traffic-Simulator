@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <string>
 #include <limits>
+#include <SFML/System/Vector2.hpp>
 using namespace std;
 
 struct Edge
@@ -18,9 +19,12 @@ struct Edge
 struct Node
 {
     int ID;
-    double x, y;
+    sf::Vector2<float> position;
 
-    Node(int nodeID = 0, double posX = 0.0, double posY = 0.0) : ID(nodeID), x(posX), y(posY) {}
+    Node(int nodeID = 0, float posX = 0.0f, double posY = 0.0f) : ID(nodeID), position(posX, posY) {}
+
+    float getX() const { return position.x; }
+    float getY() const { return position.y; }
 };
 
 class Graph
@@ -34,7 +38,7 @@ public:
 
     // Core Graph Operations
     void addEdge(int from, int to, double weight, bool bidirect = true);
-    void addNode(int id, double x = 0.0, double y = 0.0);
+    void addNode(int id, float x = 0.0f, float y = 0.0f);
 
     // Finding shortest path using Dijkstra Algorithm
     vector<int> dijkstraAlgorithm(int start, int end);

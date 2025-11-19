@@ -1,5 +1,4 @@
 #include "../include/Vehicle.h"
-#include "../include/Graph.h"
 #include <cmath>
 #include <iostream>
 
@@ -8,6 +7,7 @@ Vehicle::Vehicle(int id, const vector<int> &route, double s) : vehicleID(id), sp
     path = route;
     currentPathIndex = 0;
     status = VehicleStatus::MOVING;
+    interpolation = 0.0f;
 
     if (path.empty())
     {
@@ -15,29 +15,24 @@ Vehicle::Vehicle(int id, const vector<int> &route, double s) : vehicleID(id), sp
         status = VehicleStatus::ARRIVED;
         currentNode = -1;
         destNode = -1;
+        position = sf::Vector2<float>(0.0f, 0.0f);
+        startPosition = position;
+        targetPosition = sf::Vector2<float>(0.0f, 0.0f);
     }
     else
     {
         currentNode = path[0];
         destNode = path.back();
+        position = sf::Vector2<float>(0.0f, 0.0f);
+        startPosition = position;
+        targetPosition = sf::Vector2<float>(0.0f, 0.0f);
     }
 }
 
-void Vehicle::moveToNextNode()
+void Vehicle::moveToNextNode(const sf::Vector2<float> &nextNodePos)
 {
     // Check if already at destination
-    if (currentPathIndex >= path.size() - 1)
-    {
-        if (status != VehicleStatus::ARRIVED)
-        {
-            status = VehicleStatus::ARRIVED;
-            cout << "Vehicle " << vehicleID << " has arrived at the Destination Node " << destNode << endl;
-        }
-        return;
-    }
-
-    // Can't move if not in MOVING state
-    if (status != VehicleStatus::MOVING)
+    if (currentPathIndex >= path.size() - 1 || status != VehicleStatus::MOVING)
     {
         return;
     }
@@ -46,24 +41,45 @@ void Vehicle::moveToNextNode()
     currentPathIndex++;
     currentNode = path[currentPathIndex];
 
+    startPosition = position;
+    targetPosition = nextNodePos;
+    interpolation = 0.0f;
+
     cout << "Vehicle " << vehicleID << " has moved to Node " << currentNode << endl;
-
-    // Check if we just arrived at destination
-    if (currentPathIndex >= path.size() - 1)
-    {
-        status = VehicleStatus::ARRIVED;
-        cout << "Vehicle " << vehicleID << " has arrived at the Destination Node " << destNode << endl;
-    }
 }
 
-void Vehicle::update()
+void Vehicle::updateVisualPosition(float deltaTime)
 {
-    if (status == VehicleStatus::MOVING)
-        moveToNextNode();
+    if (status != VehicleStatus::MOVING || hasArrivedDest())
+    {
+        return;
+    }
 
-    // if vehicle arrived, do nothing
-    // if vehicle is waiting, do nothing for now (traffic logic to be implemented)
+    // Increase interpolation (0 → 1)
+    interpolation += static_cast<float>(speed) * deltaTime * 0.5f;
+    if (interpolation > 1.0f)
+    {
+        interpolation = 1.0f;
+    }
+
+    // Linear interpolation:
+    // pos = start*(1-t) + end*t
+    position.x = startPosition.x * (1.0f - interpolation) + targetPosition.x * interpolation;
+    position.y = startPosition.y * (1.0f - interpolation) + targetPosition.y * interpolation;
+
+    // When interpolation == 1, vehicle has fully reached targetPosition.
+    // The main loop will then call moveToNextNode() to go to the next segment.
 }
+
+// void Vehicle::update()
+// {
+//     if (status == VehicleStatus::MOVING){
+//         // moveToNextNode();
+//     }
+
+//     // if vehicle arrived, do nothing
+//     // if vehicle is waiting, do nothing for now (traffic logic to be implemented)
+// }
 
 bool Vehicle::hasArrivedDest() const { return status == VehicleStatus::ARRIVED; }
 bool Vehicle::canMove() const { return status == VehicleStatus::MOVING && !hasArrivedDest(); }
@@ -79,6 +95,16 @@ int Vehicle::getNextNode() const
 VehicleStatus Vehicle::getStatus() const { return status; }
 const vector<int> &Vehicle::getPath() const { return path; }
 double Vehicle::getSpeed() const { return speed; }
+sf::Vector2<float> Vehicle::getPosition() const { return position; }
+float Vehicle::getInterpolation() const { return interpolation; }
+
+void Vehicle::setPosition(const sf::Vector2<float> &pos) { position = pos; }
+void Vehicle::setStartPosition(const sf::Vector2<float> &start) { startPosition = start; }
+void Vehicle::setTargetPosition(const sf::Vector2<float> &target)
+{
+    targetPosition = target;
+    interpolation = 0.0f;
+}
 
 void Vehicle::printInfo() const
 {

@@ -30,7 +30,7 @@ void Graph::addEdge(int from, int to, double weight, bool bidirect)
         adjacencyList[to].push_back(Edge(from, weight));
 }
 
-void Graph::addNode(int id, double x, double y)
+void Graph::addNode(int id, float x, float y)
 {
     nodes[id] = Node(id, x, y);
 }
@@ -178,9 +178,9 @@ bool Graph::loadFromFile(const string &fileName)
 
     for (int i = 0; i < numNodes; i++)
     {
-        // default positions in a grid (will be adjusted later when integrating with SFML)
-        double x = (i % 3) * 200.0 + 100.0;
-        double y = (i / 3) * 200.0 + 100.0;
+        // Default positions in a grid (adjusted for 800x600 SFML window)
+        float x = (i % 4) * 200.0f + 100.0f; // 4 columns
+        float y = (i / 4) * 180.0f + 80.0f;  // 3 rows
         nodes[i] = Node(i, x, y);
     }
 
