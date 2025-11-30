@@ -1,7 +1,6 @@
 #include "../include/Graph.h"
 #include <iostream>
 #include <fstream>
-#include <queue>
 #include <algorithm>
 #include <sstream>
 
@@ -58,8 +57,7 @@ vector<int> Graph::dijkstraAlgorithm(int start, int end)
     dist[start] = 0;
 
     // Min-heap storing {distance, node}
-    using pii = pair<double, int>;
-    priority_queue<pii, vector<pii>, greater<pii>> pq;
+    MinHeapPQ<pair<double, int>> pq;
 
     // Push source into heap
     pq.push({0, start});

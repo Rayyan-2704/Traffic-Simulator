@@ -6,6 +6,7 @@
 #include <string>
 #include <limits>
 #include <SFML/System/Vector2.hpp>
+#include "PriorityQueue.h"
 using namespace std;
 
 struct Edge

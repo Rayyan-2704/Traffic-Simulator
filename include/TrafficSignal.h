@@ -1,7 +1,7 @@
 #ifndef TRAFFICSIGNAL_H
 #define TRAFFICSIGNAL_H
 
-#include <Queue.h>
+#include "Queue.h"
 #include <vector>
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Color.hpp>

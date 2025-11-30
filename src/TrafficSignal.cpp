@@ -132,7 +132,10 @@ void TrafficSignal::setState(SignalState newState)
     state = newState;
 
     if (state == SignalState::GREEN)
+    {
         timer = greenDuration;
+        releaseAllVehicles();
+    }
     else if (state == SignalState::RED)
         timer = redDuration;
 }

@@ -22,6 +22,7 @@ class Vehicle
     int destNode;
     double speed;
     VehicleStatus status;
+    int priority; // 0 for regular cars, above 0 for emergency vehicles
 
     sf::Vector2<float> position;       // current position
     sf::Vector2<float> startPosition;  // position of the node we are starting from
@@ -29,7 +30,7 @@ class Vehicle
     float interpolation;
 
 public:
-    Vehicle(int id, const vector<int> &route, double s = 1.0);
+    Vehicle(int id, const vector<int> &route, double s = 1.0, int p = 0);
 
     // Movement functions
     void moveToNextNode(const sf::Vector2<float> &nextNodePos); // Advance to next intersection
@@ -51,6 +52,7 @@ public:
     double getSpeed() const;
     sf::Vector2<float> getPosition() const;
     float getInterpolation() const;
+    int getPriority() const;
 
     // Setters
     void setPosition(const sf::Vector2<float> &pos);

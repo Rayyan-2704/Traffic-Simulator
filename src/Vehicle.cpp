@@ -2,12 +2,13 @@
 #include <cmath>
 #include <iostream>
 
-Vehicle::Vehicle(int id, const vector<int> &route, double s) : vehicleID(id), speed(s)
+Vehicle::Vehicle(int id, const vector<int> &route, double s, int p) : vehicleID(id), speed(s), priority(p)
 {
     path = route;
     currentPathIndex = 0;
     status = VehicleStatus::MOVING;
     interpolation = 0.0f;
+    status = (priority > 0) ? VehicleStatus::EMERGENCY : VehicleStatus::MOVING;
 
     if (path.empty())
     {
@@ -97,6 +98,7 @@ const vector<int> &Vehicle::getPath() const { return path; }
 double Vehicle::getSpeed() const { return speed; }
 sf::Vector2<float> Vehicle::getPosition() const { return position; }
 float Vehicle::getInterpolation() const { return interpolation; }
+int Vehicle::getPriority() const { return priority; }
 
 void Vehicle::setPosition(const sf::Vector2<float> &pos) { position = pos; }
 void Vehicle::setStartPosition(const sf::Vector2<float> &start) { startPosition = start; }
@@ -140,6 +142,5 @@ void Vehicle::printInfo() const
     }
     cout << endl;
     cout << "Speed: " << speed << endl;
-    cout << "-------------------------\n"
-         << endl;
+    cout << "-------------------------\n" << endl;
 }

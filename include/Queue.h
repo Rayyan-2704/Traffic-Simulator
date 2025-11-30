@@ -6,21 +6,21 @@
 using namespace std;
 
 template <typename T>
-class ListNode
+class QueueListNode
 {
 public:
     T data;
-    ListNode<T> *next;
+    QueueListNode<T> *next;
 
-    ListNode(T val) : data(val), next(nullptr) {}
+    QueueListNode(T val) : data(val), next(nullptr) {}
 };
 
 template <typename T>
 class Queue
 {
     int Size;
-    ListNode<T> *start;
-    ListNode<T> *end;
+    QueueListNode<T> *start;
+    QueueListNode<T> *end;
 
 public:
     Queue();
@@ -40,7 +40,7 @@ Queue<T>::Queue() : Size(0), start(nullptr), end(nullptr) {}
 template <typename T>
 void Queue<T>::push(T val)
 {
-    ListNode<T> *newNode = new ListNode<T>(val);
+    QueueListNode<T> *newNode = new QueueListNode<T>(val);
 
     if (Size == 0)
     {
@@ -64,7 +64,7 @@ void Queue<T>::pop()
         throw underflow_error("Queue underflow: no elements to dequeue!");
     }
 
-    ListNode<T> *temp = start;
+    QueueListNode<T> *temp = start;
     start = start->next;
     temp->next = nullptr;
     delete temp;
@@ -100,10 +100,10 @@ bool Queue<T>::empty() const
 template <typename T>
 Queue<T>::~Queue()
 {
-    ListNode<T> *temp = start;
+    QueueListNode<T> *temp = start;
     while (temp != nullptr)
     {
-        ListNode<T> *delNode = temp;
+        QueueListNode<T> *delNode = temp;
         temp = temp->next;
         delete delNode;
     }
