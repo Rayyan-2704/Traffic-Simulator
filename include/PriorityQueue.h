@@ -1,9 +1,11 @@
 #ifndef PRIORITY_QUEUE_H
 #define PRIORITY_QUEUE_H
 
+#include <iostream>
 #include <vector>
 #include <stdexcept>
 #include <utility>
+#include "../include/Vehicle.h"
 using namespace std;
 
 /* Min-Heap Priority Queue for Dijkstra's Algorithm */

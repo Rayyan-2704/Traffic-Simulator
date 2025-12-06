@@ -53,6 +53,7 @@ public:
     sf::Vector2<float> getPosition() const;
     float getInterpolation() const;
     int getPriority() const;
+    bool isEmergency() const;
 
     // Setters
     void setPosition(const sf::Vector2<float> &pos);

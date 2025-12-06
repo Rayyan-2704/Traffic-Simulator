@@ -6,7 +6,6 @@ Vehicle::Vehicle(int id, const vector<int> &route, double s, int p) : vehicleID(
 {
     path = route;
     currentPathIndex = 0;
-    status = VehicleStatus::MOVING;
     interpolation = 0.0f;
     status = (priority > 0) ? VehicleStatus::EMERGENCY : VehicleStatus::MOVING;
 
@@ -33,7 +32,7 @@ Vehicle::Vehicle(int id, const vector<int> &route, double s, int p) : vehicleID(
 void Vehicle::moveToNextNode(const sf::Vector2<float> &nextNodePos)
 {
     // Check if already at destination
-    if (currentPathIndex >= path.size() - 1 || status != VehicleStatus::MOVING)
+    if (currentPathIndex >= path.size() - 1 || (status != VehicleStatus::MOVING && status != VehicleStatus::EMERGENCY))
     {
         return;
     }
@@ -51,7 +50,7 @@ void Vehicle::moveToNextNode(const sf::Vector2<float> &nextNodePos)
 
 void Vehicle::updateVisualPosition(float deltaTime)
 {
-    if (status != VehicleStatus::MOVING || hasArrivedDest())
+    if ((status != VehicleStatus::MOVING && status != VehicleStatus::EMERGENCY) || hasArrivedDest())
     {
         return;
     }
@@ -83,7 +82,12 @@ void Vehicle::updateVisualPosition(float deltaTime)
 // }
 
 bool Vehicle::hasArrivedDest() const { return status == VehicleStatus::ARRIVED; }
-bool Vehicle::canMove() const { return status == VehicleStatus::MOVING && !hasArrivedDest(); }
+
+bool Vehicle::canMove() const
+{ 
+    return (status == VehicleStatus::MOVING || status == VehicleStatus::EMERGENCY) && !hasArrivedDest(); 
+}
+
 void Vehicle::setStatus(VehicleStatus newStatus) { status = newStatus; }
 
 int Vehicle::getID() const { return vehicleID; }
@@ -99,6 +103,7 @@ double Vehicle::getSpeed() const { return speed; }
 sf::Vector2<float> Vehicle::getPosition() const { return position; }
 float Vehicle::getInterpolation() const { return interpolation; }
 int Vehicle::getPriority() const { return priority; }
+bool Vehicle::isEmergency() const { return priority > 0; }
 
 void Vehicle::setPosition(const sf::Vector2<float> &pos) { position = pos; }
 void Vehicle::setStartPosition(const sf::Vector2<float> &start) { startPosition = start; }
