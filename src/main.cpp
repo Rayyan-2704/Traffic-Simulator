@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>
 #include "../include/Graph.h"
@@ -13,8 +14,7 @@ using namespace std;
 
 int main()
 {
-    cout << "\n=== Traffic Simulator - Day 5: Stack + Priority Queue ===\n"
-         << endl;
+    cout << "\n=== Traffic Simulator - Day 5: Stack + Priority Queue ===\n" << endl;
 
     srand(time(nullptr)); // Seed random for emergency spawning
 
@@ -87,6 +87,7 @@ int main()
     EmergencyManager emergencyMgr;
 
     int nextVehicleID = 1;
+    vector<int> vehiclesToRemove;
 
     // Spawn regular vehicles
     vector<Vehicle> cars;
@@ -121,6 +122,7 @@ int main()
     // Print controls
     cout << "=== CONTROLS ===" << endl;
     cout << "1-4 - Toggle Signals" << endl;
+    cout << "A   - Spawn Regular Vehicle" << endl;
     cout << "E   - Spawn Emergency Vehicle" << endl;
     cout << "U   - UNDO last action" << endl;
     cout << "ESC - Exit simulation" << endl;
@@ -181,6 +183,37 @@ int main()
                     undoStack.push(Action(ActionType::TOGGLE_SIGNAL, 4, prevState, newState, totalTime));
                     undoStack.printLastAction();
                 }
+                // SPAWN REGULAR VEHICLE (A key)
+                else if (keyEvent->code == sf::Keyboard::Key::A)
+                {
+                    // Random start and end nodes
+                    int startNode = rand() % cityMap.getNumNodes();
+                    int endNode = rand() % cityMap.getNumNodes();
+                    
+                    while (startNode == endNode)
+                        endNode = rand() % cityMap.getNumNodes();
+                    
+                    vector<int> regularPath = cityMap.dijkstraAlgorithm(startNode, endNode);
+                    
+                    if (!regularPath.empty())
+                    {                        
+                        // Create regular vehicle (priority = 0)
+                        Vehicle newCar(nextVehicleID++, regularPath, 1.0, 0);
+                        newCar.setPosition(cityMap.getNode(startNode).position);
+                        newCar.setStartPosition(cityMap.getNode(startNode).position);
+                        if (regularPath.size() > 1)
+                            newCar.setTargetPosition(cityMap.getNode(regularPath[1]).position);
+                        
+                        cars.push_back(newCar);
+                        
+                        // Record action for undo (store index in vector)
+                        int vehicleIndex = cars.size() - 1;
+                        undoStack.push(Action(ActionType::SPAWN_VEHICLE, newCar.getID(), vehicleIndex, totalTime));
+                        
+                        cout << "🚗 Regular Vehicle " << newCar.getID() << " spawned! Path: " << startNode << " -> " << endNode << endl;
+                        undoStack.printLastAction();
+                    }
+                }
                 // SPAWN EMERGENCY VEHICLE (E key)
                 else if (keyEvent->code == sf::Keyboard::Key::E)
                 {
@@ -210,7 +243,12 @@ int main()
                         cars.push_back(emergency);
                         emergencyMgr.addEmergency(&cars.back());
 
+                        // Record action for undo (store index in vector)
+                        int vehicleIndex = cars.size() - 1;
+                        undoStack.push(Action(ActionType::SPAWN_VEHICLE, emergency.getID(), vehicleIndex, totalTime));
+
                         cout << "🚨 " << emergencyType << " (Vehicle " << emergency.getID() << ") spawned! Priority: " << priority << ", Path: " << startNode << " -> " << endNode << endl;
+                        undoStack.printLastAction();
                     }
                 }
                 // UNDO (U key)
@@ -230,6 +268,38 @@ int main()
                                     cout << "Signal " << lastAction.targetID << " reverted" << endl;
                                     break;
                                 }
+                            }
+                        }
+                        else if (lastAction.type == ActionType::SPAWN_VEHICLE)
+                        {
+                            bool found = false;
+                            bool alreadyArrived = false;
+                            for (auto& car : cars)
+                            {
+                                if (car.getID() == lastAction.targetID)
+                                {
+                                    if (car.hasArrivedDest())
+                                    {
+                                        alreadyArrived = true;
+                                        cout << "Cannot undo Vehicle " << lastAction.targetID << " - already completed its journey!" << endl;
+                                        break;
+                                    }
+                                    
+                                    // Mark as arrived first (stops rendering/updating this frame)
+                                    car.setStatus(VehicleStatus::ARRIVED);
+                                    
+                                    // Schedule for removal at end of frame
+                                    vehiclesToRemove.push_back(car.getID());
+                                    found = true;
+                                    
+                                    cout << "Vehicle " << lastAction.targetID << " spawn undone (removed from simulation)" << endl;
+                                    break;
+                                }
+                            }
+                            
+                            if (!found)
+                            {
+                                cout << "Warning: Could not find vehicle " << lastAction.targetID << " to undo!" << endl;
                             }
                         }
                     }
@@ -292,6 +362,22 @@ int main()
                     }
                 }
             }
+        }
+
+        if (!vehiclesToRemove.empty())
+        {
+            for (int vehicleID : vehiclesToRemove)
+            {
+                // Find and erase vehicle
+                auto it = remove_if(cars.begin(), cars.end(), [vehicleID](const Vehicle& v) { return v.getID() == vehicleID; });
+                
+                if (it != cars.end())
+                {
+                    cars.erase(it, cars.end());
+                    cout << "Vehicle " << vehicleID << " physically removed from vector" << endl;
+                }
+            }
+            vehiclesToRemove.clear();
         }
 
         // Clear window
@@ -512,7 +598,7 @@ int main()
             window.draw(hud);
 
             sf::Text controls(font);
-            controls.setString("1-4: Toggle Signals | E: Emergency | U: Undo | ESC: Exit");
+            controls.setString("1-4: Toggle Signals | A: Spawn Regular Car | E: Spawn Emergency Car | U: Undo | ESC: Exit");
             controls.setCharacterSize(14);
             controls.setFillColor(sf::Color(180, 180, 180));
             controls.setPosition({10, 570});

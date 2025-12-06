@@ -19,12 +19,13 @@ struct Action
     SignalState previousState; // For signal toggles
     SignalState newState;      // For signal toggles
     float timestamp;           // When action occurred
+    int vehicleIndex;          // For vehicle spawns (position in vector)
 
     // Constructor for signal actions
-    Action(ActionType type, int id, SignalState prev, SignalState next, float time) : type(type), targetID(id), previousState(prev), newState(next), timestamp(time) {}
+    Action(ActionType type, int id, SignalState prev, SignalState next, float time) : type(type), targetID(id), previousState(prev), newState(next), timestamp(time), vehicleIndex(vehicleIndex) {}
 
     // Constructor for non-signal actions
-    Action(ActionType type, int id, float time) : type(type), targetID(id), previousState(SignalState::GREEN), newState(SignalState::GREEN), timestamp(time) {}
+    Action(ActionType type, int vehicleID, int vehicleIndex, float time) : type(type), targetID(vehicleID), previousState(SignalState::GREEN), newState(SignalState::GREEN), timestamp(time), vehicleIndex(vehicleIndex) {}
 };
 
 class ActionStack
