@@ -1,7 +1,7 @@
 #include "../include/EmergencyManager.h"
 #include <iostream>
 
-EmergencyManager::EmergencyManager() : nextEmergencyID(1000)
+EmergencyManager::EmergencyManager()
 {
     cout << "EmergencyManager initialized" << endl;
 }

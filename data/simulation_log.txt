@@ -2,28 +2,29 @@
     TRAFFIC SIMULATION REPORT
 ========================================
 
-SIMULATION DURATION: 2.17 seconds
+SIMULATION DURATION: 3.40 seconds
 
 --- VEHICLE STATISTICS ---
 Total Vehicles Spawned:    3
-Currently Active:          3
+Currently Active:          2
 Successfully Arrived:      0
 Emergency Vehicles:        0
-Currently Queued:          0
+Currently Queued:          1
 Completed Trips:           0
 Average Travel Time:       0.00 seconds
 
 --- TRAFFIC FLOW ---
-Average Queue Size:        0.00 vehicles
+Average Queue Size:        0.25 vehicles
 Busiest Road:              0 -> 1 (2 vehicles)
-Total Road Segments Used:  1
+Total Road Segments Used:  2
 
 --- USER INTERACTIONS ---
-Signal Toggles:            0
+Signal Toggles:            1
 Undo Operations:           0
 
 --- ROAD CONGESTION (Sorted by Traffic) ---
 1. Road 0 -> 1: 2 vehicles
+2. Road 2 -> 6: 1 vehicles
 
 ========================================
 Report generated successfully

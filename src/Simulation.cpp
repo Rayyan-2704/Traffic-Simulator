@@ -93,8 +93,7 @@ void Simulation::loadAssets()
             cout << "Green traffic light loaded" << endl;
     }
 
-    cout << "Assets loaded!\n"
-         << endl;
+    cout << "Assets loaded!\n" << endl;
 }
 
 bool Simulation::loadMap(const string &filename)

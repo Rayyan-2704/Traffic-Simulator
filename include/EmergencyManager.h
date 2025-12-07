@@ -20,7 +20,6 @@ class EmergencyManager
 {
 private:
     MaxHeapPQ emergencyQueue;
-    int nextEmergencyID; // For auto-generating IDs
 
 public:
     EmergencyManager();
