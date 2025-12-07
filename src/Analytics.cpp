@@ -229,8 +229,6 @@ bool Analytics::saveToFile(const string &filename)
     file << "Completed Trips:           " << vehicleArrivalTimes.size() << endl;
     file << "Average Travel Time:       " << fixed << setprecision(2) << stats.averageTravelTime << " seconds" << endl;
     file << endl;
-    file << "Average Travel Time:       " << fixed << setprecision(2) << stats.averageTravelTime << " seconds" << endl;
-    file << endl;
 
     file << "--- TRAFFIC FLOW ---" << endl;
     file << "Average Queue Size:        " << fixed << setprecision(2) << stats.averageQueueSize << " vehicles" << endl;

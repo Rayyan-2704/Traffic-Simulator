@@ -28,6 +28,8 @@ Simulation::Simulation() : window(sf::VideoMode({1200, 800}), "Traffic Simulator
     isRunning = false;
     srand(time(nullptr));
 
+    vehicles.reserve(200);
+
     cout << "\n=== Traffic Simulator - Initialized ===\n" << endl;
 }
 
@@ -38,7 +40,7 @@ void Simulation::loadAssets()
     // Load font (only once)
     if (!fontLoaded)
     {
-        fontLoaded = font.openFromFile("assets/font.ttf");
+        fontLoaded = font.openFromFile("assets/fonts/Orbitron-Bold.ttf");
         if (fontLoaded)
             cout << "Font loaded successfully" << endl;
     }
@@ -577,7 +579,7 @@ void Simulation::drawTrafficSignals()
             {
                 sf::Text queueLabel(font);
                 queueLabel.setString("Q:" + to_string(signal.getQueueSize()));
-                queueLabel.setCharacterSize(18);
+                queueLabel.setCharacterSize(12);
                 queueLabel.setFillColor(sf::Color::Yellow);
                 queueLabel.setOutlineColor(sf::Color::Black);
                 queueLabel.setOutlineThickness(2);
