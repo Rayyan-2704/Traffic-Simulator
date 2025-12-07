@@ -9,6 +9,7 @@
 #include "TrafficSignal.h"
 #include "ActionStack.h"
 #include "EmergencyManager.h"
+#include "Analytics.h"
 using namespace std;
 
 class Simulation
@@ -19,6 +20,7 @@ class Simulation
     vector<TrafficSignal> signals;
     ActionStack undoStack;
     EmergencyManager emergencyMgr;
+    Analytics analytics;
 
     // SFML Window
     sf::RenderWindow window;
@@ -81,6 +83,10 @@ public:
     // Configuration
     bool loadMap(const string &filename);
     void setFrameRate(int fps);
+
+    // Analytics
+    void saveAnalytics(const std::string& filename);
+    void printAnalytics() const;
 };
 
 #endif

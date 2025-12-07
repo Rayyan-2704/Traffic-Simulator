@@ -176,9 +176,9 @@ bool Graph::loadFromFile(const string &fileName)
 
     for (int i = 0; i < numNodes; i++)
     {
-        // Default positions in a grid (adjusted for 800x600 SFML window)
-        float x = (i % 4) * 200.0f + 100.0f; // 4 columns
-        float y = (i / 4) * 180.0f + 80.0f;  // 3 rows
+        // Default positions in a grid (adjusted for 1200x800 SFML window)
+        float x = (i % 4) * 280.0f + 150.0f; // 4 columns
+        float y = (i / 4) * 240.0f + 120.0f;  // 3 rows
         nodes[i] = Node(i, x, y);
     }
 

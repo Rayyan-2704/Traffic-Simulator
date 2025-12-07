@@ -21,7 +21,7 @@ sf::Texture Simulation::trafficLightGreen;
 bool Simulation::redLightLoaded = false;
 bool Simulation::greenLightLoaded = false;
 
-Simulation::Simulation() : window(sf::VideoMode({800, 600}), "Traffic Simulator"), undoStack(100)
+Simulation::Simulation() : window(sf::VideoMode({1200, 800}), "Traffic Simulator"), undoStack(100)
 {
     nextVehicleID = 1;
     totalTime = 0.0f;
@@ -128,6 +128,7 @@ void Simulation::spawnInitialVehicles()
     if (path1.size() > 1)
         car1.setTargetPosition(cityMap.getNode(path1[1]).position);
     vehicles.push_back(car1);
+    analytics.recordVehicleSpawn(car1.getID(), 0.0f, false);
 
     vector<int> path2 = cityMap.dijkstraAlgorithm(2, 10);
     Vehicle car2(nextVehicleID++, path2, 0.8, 0);
@@ -136,6 +137,7 @@ void Simulation::spawnInitialVehicles()
     if (path2.size() > 1)
         car2.setTargetPosition(cityMap.getNode(path2[1]).position);
     vehicles.push_back(car2);
+    analytics.recordVehicleSpawn(car2.getID(), 0.0f, false);
 
     vector<int> path3 = cityMap.dijkstraAlgorithm(0, 7);
     Vehicle car3(nextVehicleID++, path3, 1.2, 0);
@@ -144,6 +146,7 @@ void Simulation::spawnInitialVehicles()
     if (path3.size() > 1)
         car3.setTargetPosition(cityMap.getNode(path3[1]).position);
     vehicles.push_back(car3);
+    analytics.recordVehicleSpawn(car3.getID(), 0.0f, false);
 
     cout << "Spawned " << vehicles.size() << " initial vehicles\n" << endl;
 }
@@ -249,6 +252,9 @@ void Simulation::toggleSignal(int signalIndex)
     
     undoStack.push(Action(ActionType::TOGGLE_SIGNAL, signals[signalIndex].getID(), prevState, newState, totalTime));
     undoStack.printLastAction();
+
+    // Track analytics
+    analytics.recordSignalToggle();
 }
 
 void Simulation::spawnRegularVehicle()
@@ -277,6 +283,9 @@ void Simulation::spawnRegularVehicle()
         
         int vehicleIndex = vehicles.size() - 1;
         undoStack.push(Action(ActionType::SPAWN_VEHICLE, newCar.getID(), vehicleIndex, totalTime));
+
+        // Track analytics
+        analytics.recordVehicleSpawn(newCar.getID(), totalTime, false);
         
         cout << "Regular Vehicle " << newCar.getID() << " spawned! Path: " << startNode << " -> " << endNode << endl;
         undoStack.printLastAction();
@@ -313,6 +322,9 @@ void Simulation::spawnEmergencyVehicle()
         
         int vehicleIndex = vehicles.size() - 1;
         undoStack.push(Action(ActionType::SPAWN_VEHICLE, emergency.getID(), vehicleIndex, totalTime));
+
+        // Track analytics
+        analytics.recordVehicleSpawn(emergency.getID(), totalTime, true);
         
         cout << emergencyType << " (Vehicle " << emergency.getID() << ") spawned! Priority: " << priority << ", Path: " << startNode << " -> " << endNode << endl;
         undoStack.printLastAction();
@@ -328,6 +340,9 @@ void Simulation::undoLastAction()
     }
     
     Action lastAction = undoStack.undo();
+
+    // Track analytics
+    analytics.recordUndoOperation();
     
     if (lastAction.type == ActionType::TOGGLE_SIGNAL)
     {
@@ -420,11 +435,15 @@ void Simulation::update(float deltaTime)
                     {
                         sf::Vector2<float> nextPos = cityMap.getNode(nextNodeId).position;
                         car.moveToNextNode(nextPos);
+
+                        // Track road usage for analytics
+                        analytics.recordRoadUsage(currentNodeId, nextNodeId);
                     }
                 }
                 else
                 {
                     car.setStatus(VehicleStatus::ARRIVED);
+                    analytics.recordVehicleArrival(car.getID(), totalTime);
                     cout << "Vehicle " << car.getID() << " arrived at destination!" << endl;
                 }
             }
@@ -436,8 +455,7 @@ void Simulation::update(float deltaTime)
     {
         for (int vehicleID : vehiclesToRemove)
         {
-            auto it = remove_if(vehicles.begin(), vehicles.end(),
-                               [vehicleID](const Vehicle& v) { return v.getID() == vehicleID; });
+            auto it = remove_if(vehicles.begin(), vehicles.end(), [vehicleID](const Vehicle& v) { return v.getID() == vehicleID; });
             
             if (it != vehicles.end())
             {
@@ -487,10 +505,10 @@ void Simulation::drawIntersections()
     {
         const Node& node = nodePair.second;
         
-        sf::CircleShape intersection(12);
-        intersection.setPosition(node.position - sf::Vector2<float>(12, 12));
+        sf::CircleShape intersection(16);
+        intersection.setPosition(node.position - sf::Vector2<float>(16, 16));
         intersection.setFillColor(sf::Color(200, 200, 200));
-        intersection.setOutlineThickness(2);
+        intersection.setOutlineThickness(3);
         intersection.setOutlineColor(sf::Color::White);
         window.draw(intersection);
         
@@ -498,9 +516,9 @@ void Simulation::drawIntersections()
         {
             sf::Text label(font);
             label.setString(to_string(node.ID));
-            label.setCharacterSize(14);
+            label.setCharacterSize(20);
             label.setFillColor(sf::Color::Black);
-            label.setPosition(node.position - sf::Vector2<float>(5, 8));
+            label.setPosition(node.position - sf::Vector2<float>(7, 10));
             window.draw(label);
         }
     }
@@ -517,16 +535,16 @@ void Simulation::drawTrafficSignals()
         if (signal.getState() == SignalState::RED && redLightLoaded)
         {
             sf::Sprite lightSprite(trafficLightRed);
-            lightSprite.setScale({0.4f, 0.4f});
-            lightSprite.setPosition(sigPos + sf::Vector2<float>(15, -30));
+            lightSprite.setScale({0.5f, 0.5f});
+            lightSprite.setPosition(sigPos + sf::Vector2<float>(20, -40));
             window.draw(lightSprite);
             usedSprite = true;
         }
         else if (signal.getState() == SignalState::GREEN && greenLightLoaded)
         {
             sf::Sprite lightSprite(trafficLightGreen);
-            lightSprite.setScale({0.4f, 0.4f});
-            lightSprite.setPosition(sigPos + sf::Vector2<float>(15, -30));
+            lightSprite.setScale({0.5f, 0.5f});
+            lightSprite.setPosition(sigPos + sf::Vector2<float>(20, -40));
             window.draw(lightSprite);
             usedSprite = true;
         }
@@ -534,10 +552,10 @@ void Simulation::drawTrafficSignals()
         // Fallback to colored circle
         if (!usedSprite)
         {
-            sf::CircleShape signalCircle(8);
-            signalCircle.setPosition(sigPos + sf::Vector2<float>(20, -20));
+            sf::CircleShape signalCircle(12);
+            signalCircle.setPosition(sigPos + sf::Vector2<float>(25, -25));
             signalCircle.setFillColor(signal.getColor());
-            signalCircle.setOutlineThickness(2);
+            signalCircle.setOutlineThickness(3);
             signalCircle.setOutlineColor(sf::Color::Black);
             window.draw(signalCircle);
         }
@@ -547,11 +565,11 @@ void Simulation::drawTrafficSignals()
         {
             sf::Text sigLabel(font);
             sigLabel.setString("S" + to_string(signal.getID()));
-            sigLabel.setCharacterSize(10);
+            sigLabel.setCharacterSize(16);
             sigLabel.setFillColor(sf::Color::White);
             sigLabel.setOutlineColor(sf::Color::Black);
-            sigLabel.setOutlineThickness(1);
-            sigLabel.setPosition(sigPos + sf::Vector2<float>(25, -5));
+            sigLabel.setOutlineThickness(2);
+            sigLabel.setPosition(sigPos + sf::Vector2<float>(30, -5));
             window.draw(sigLabel);
             
             // Draw queue size
@@ -559,11 +577,11 @@ void Simulation::drawTrafficSignals()
             {
                 sf::Text queueLabel(font);
                 queueLabel.setString("Q:" + to_string(signal.getQueueSize()));
-                queueLabel.setCharacterSize(12);
+                queueLabel.setCharacterSize(18);
                 queueLabel.setFillColor(sf::Color::Yellow);
                 queueLabel.setOutlineColor(sf::Color::Black);
-                queueLabel.setOutlineThickness(1);
-                queueLabel.setPosition(sigPos + sf::Vector2<float>(20, 8));
+                queueLabel.setOutlineThickness(2);
+                queueLabel.setPosition(sigPos + sf::Vector2<float>(25, 12));
                 window.draw(queueLabel);
             }
         }
@@ -676,21 +694,33 @@ void Simulation::drawHUD()
     sf::Text hud(font);
     string hudText = "Moving: " + to_string(moving) + " | Waiting: " + to_string(waiting) + " | Emergency: " + to_string(emergency) + " | Arrived: " + to_string(arrived) + " | Undo: " + to_string(undoStack.size());
     hud.setString(hudText);
-    hud.setCharacterSize(16);
+    hud.setCharacterSize(22);
     hud.setFillColor(sf::Color::White);
-    hud.setPosition({10, 10});
+    hud.setOutlineColor(sf::Color::Black);
+    hud.setOutlineThickness(2);
+    hud.setPosition({15, 15});
     window.draw(hud);
     
     // Controls
     sf::Text controls(font);
     controls.setString("1-4: Toggle Signals | A: Spawn Car | E: Emergency | U: Undo | ESC: Exit");
-    controls.setCharacterSize(14);
-    controls.setFillColor(sf::Color(180, 180, 180));
-    controls.setPosition({10, 570});
+    controls.setCharacterSize(18);
+    controls.setFillColor(sf::Color(200, 200, 200));
+    controls.setOutlineColor(sf::Color::Black);
+    controls.setOutlineThickness(1);
+    controls.setPosition({15, 760});
     window.draw(controls);
 }
+
+void Simulation::saveAnalytics(const std::string& filename) { analytics.saveToFile(filename); }
+void Simulation::printAnalytics() const { analytics.printSummary(); }
 
 Simulation::~Simulation()
 {
     cout << "\n=== Simulation Ended ===" << endl;
+
+    // Print summary & Save to file
+    analytics.updateStats(vehicles, signals, totalTime); 
+    analytics.printSummary();
+    saveAnalytics("data/simulation_log.txt");
 }
