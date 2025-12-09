@@ -12,7 +12,7 @@ using namespace std;
 struct Edge
 {
     int destination; // Acts like a pointer to which node this edge/road leads to
-    double weight;   // How much it costs to travel via this edge/road
+    double weight;   // How much distance to travel via this edge/road
 
     Edge(int dest, double w = 0.0) : destination(dest), weight(w) {}
 };

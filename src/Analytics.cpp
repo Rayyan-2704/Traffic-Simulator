@@ -6,7 +6,7 @@
 
 Analytics::Analytics()
 {
-    cout << "Analytics system initialized" << std::endl;
+    cout << "Analytics system initialized" << endl;
 }
 
 string Analytics::getRoadKey(int from, int to) const
