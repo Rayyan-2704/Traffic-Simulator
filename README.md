@@ -13,7 +13,7 @@ The **Traffic Simulator** is a sophisticated city traffic management system that
 - **10+ Data Structures** implemented from scratch
 - **Pathfinding** using Dijkstra's algorithm
 - **Priority-based emergency vehicle** routing
-- **Interactive traffic signals** with undo/redo functionality
+- **Interactive traffic signals** with undo functionality
 - **Analytics engine** with comprehensive traffic statistics
 - **File I/O** for map loading and report generation
 
@@ -97,7 +97,7 @@ class Stack {
     StackListNode<T> *Top;
 };
 ```
-- **Used for:** Undo/redo action history
+- **Used for:** Undo action history
 - **Implementation:** Singly linked list
 - **Operations:** O(1) push/pop/peek
 
